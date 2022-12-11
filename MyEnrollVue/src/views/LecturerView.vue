@@ -6,19 +6,31 @@ import { query, collection, onSnapshot, getCountFromServer, orderBy } from 'fire
 
 const lecturers = ref([])
 const count = ref(0)
+const sort = ref("hiredate")
 
 async function getLecturer() {
     const lecturerRef = collection(db, "lecturers")
-    await onSnapshot(query(lecturerRef, orderBy("hiredate","desc")), docSnapshot => {
-        const lecModel = []
-        docSnapshot.forEach((doc) => {
+    if(sort.value == "hiredate") {
+        await onSnapshot(query(lecturerRef, orderBy("hiredate","desc")), docSnapshot => {
+            const lecModel = []
+            docSnapshot.forEach((doc) => {
             const data = doc.data()
             data.id = doc.id
             lecModel.push(data)
             lecturers.value = [...lecModel]
+            })
         })
-    })
-
+    } else {
+        await onSnapshot(query(lecturerRef, orderBy(sort.value)), docSnapshot => {
+            const lecModel = []
+            docSnapshot.forEach((doc) => {
+            const data = doc.data()
+            data.id = doc.id
+            lecModel.push(data)
+            lecturers.value = [...lecModel]
+            })
+        })
+    }
     const countFromServer = await getCountFromServer(query(lecturerRef))
     count.value = countFromServer.data().count
 }
@@ -31,10 +43,18 @@ onMounted(() => {
  
 <template>
 <div>
-    <LecturerList :lecturers="lecturers" :count="count"></LecturerList>
+    <h3>Lecturer List ({{ count }})</h3>
+    <select v-model="sort" @click="getLecturer()">
+        <option>name</option>
+        <option>email</option>
+        <option>hiredate</option>
+    </select>
+    <LecturerList :lecturers="lecturers"></LecturerList>
 </div>
 </template>
  
-<style>
-
+<style scoped>
+button {
+    margin: 20px;
+}
 </style>
