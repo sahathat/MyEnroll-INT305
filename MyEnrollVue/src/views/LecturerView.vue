@@ -1,19 +1,26 @@
 <script setup>
-import LecturerList from '../components/LecturerList.vue';
+import LecturerList from '../components/lecturer/LecturerList.vue';
 import { ref, onMounted } from "vue"
 import db from '../firebase/init.js'
-import { query, collection, getDocs } from 'firebase/firestore'
-import { RouterLink, RouterView } from 'vue-router';
+import { query, collection, onSnapshot, getCountFromServer, orderBy } from 'firebase/firestore'
 
 const lecturers = ref([])
+const count = ref(0)
 
 async function getLecturer() {
     const lecturerRef = collection(db, "lecturers")
-    console.log(lecturerRef)
-    const querySnap = getDocs(query(lecturerRef))
-    querySnap.forEach(lecturer => {
-        console.log(lecturer.data())
-    });
+    await onSnapshot(query(lecturerRef, orderBy("hiredate","desc")), docSnapshot => {
+        const lecModel = []
+        docSnapshot.forEach((doc) => {
+            const data = doc.data()
+            data.id = doc.id
+            lecModel.push(data)
+            lecturers.value = [...lecModel]
+        })
+    })
+
+    const countFromServer = await getCountFromServer(query(lecturerRef))
+    count.value = countFromServer.data().count
 }
 
 onMounted(() => {
@@ -24,7 +31,7 @@ onMounted(() => {
  
 <template>
 <div>
-    <LecturerList :lecturers="lecturers"></LecturerList>
+    <LecturerList :lecturers="lecturers" :count="count"></LecturerList>
 </div>
 </template>
  
