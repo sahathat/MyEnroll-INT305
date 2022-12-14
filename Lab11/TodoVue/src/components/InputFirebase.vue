@@ -1,27 +1,21 @@
-<script>
+<script setup>
 import { collection, addDoc } from "firebase/firestore"
 import db from "../firebase/init"
+import {ref} from "vue"
 
-export default {
-    name: "InputFirebase",
-    data() {
-        return {
-            newTitle: null,
-        };
-    },
-    emits: ["update-todos"],
-    methods: {
-        async addTodos(){
-            const docRef = collection(db,"todos")
-            await addDoc(docRef, {
-                title: this.newTitle,
-                completed: false,
-                createdAt: new Date()
-            })
-            this.newTitle = null
-            this.$emit('update-todos')
-        }
-    }
+const newTitle = ref('')
+
+const emit = defineEmits(["update-todos"])
+
+async function addTodos(){
+    const docRef = collection(db,"todos")
+    await addDoc(docRef, {
+        title: newTitle.value,
+        completed: false,
+        createdAt: new Date()
+    })
+    newTitle.value = null
+    emit('update-todos')
 }
 </script>
  
