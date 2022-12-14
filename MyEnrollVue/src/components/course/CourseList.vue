@@ -10,7 +10,7 @@ defineProps({
     }
 })
 
-defineEmits(['editCourse','deleteCourse'])
+const emit = defineEmits(['deleteCourse'])
 </script>
  
 <template>
@@ -26,7 +26,7 @@ defineEmits(['editCourse','deleteCourse'])
                     </li>
                 </ul>
             </p>
-            <button @click="$emit('editCourse', course)">edit</button> <button @click="$emit('deleteCourse', course.id)">delete</button>
+            <button @click="$emit('deleteCourse', course.id)">delete</button>
         </li>
     </ul>
 </div>

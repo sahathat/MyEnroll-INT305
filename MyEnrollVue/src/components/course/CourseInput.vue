@@ -1,45 +1,59 @@
 <script setup>
-import {computed} from 'vue'
-let props = defineProps({
+
+import {ref} from 'vue'
+import db from '../../firebase/init.js'
+import { doc, setDoc } from 'firebase/firestore'
+
+const id = ref('')
+const name = ref('')
+const credit = ref('')
+const lecturers = ref([])
+
+defineProps({
     lecturerList: {
         type: Array,
         require: true
-    },
-    currentCourse: {
-        type: Object,
-        default: {}
     }
 })
 
-defineEmits(['createCourse','updateCourse'])
-let newCourse = computed(()=>{
-    return {
-        id: props.currentCourse.id,
-        name: props.currentCourse.name,
-        credit: props.currentCourse.credit,
-        lecturers: props.currentCourse.lecturers == undefined ? [""] : props.currentCourse.lecturers,
-    }
-})
+const emit = defineEmits(['createCourse'])
+
+async function createCourse() {
+  const newCourseEmail = []
+  lecturers.value.forEach(lecturer => {
+    newCourseEmail.push(lecturer.email)
+  })
+  await(setDoc(doc(db,"courses",id.value), {
+    name: name.value,
+    credit: credit.value,
+    lecturers: newCourseEmail,
+    createdOn: new Date(),
+    updatedOn: new Date()
+  }))
+  id.value = ''
+  name.value = ''
+  credit.value = ''
+  lecturers.value = []
+  emit('createCourse')
+}
+
 </script>
  
 <template>
 <div>
     <h2>Create course:</h2>
-    <span v-if="newCourse.id == undefined">Course id: <input type="text" v-model="newCourse.id"></span> <br>
-    <span v-if="newCourse.id == undefined">Course name: <input type="text" v-model="newCourse.name"></span> <br>
-    <span>Course credit: <input type="number" step="1" min="1" max="10" v-model="newCourse.credit"></span> <br>
-    <span>Lecturer: 
-    <div v-for="(lecturer, index) in lecturerList" :key="index">
-        <input type="checkbox" :id="lecturer" :value="lecturer" v-model="newCourse.lecturers">
-        <label :for="lecturer"> {{lecturer.email}} </label>
-    </div>
-    </span> <br>
-    {{newCourse.lecturers}}
-    <!-- Lecturer: <input type="text" v-model="newCourse.name"> <br> -->
-    <button @click="$emit('updateCourse',newCourse)" v-if="newCourse.id != undefined">
-        Save
-    </button>
-    <button @click="$emit('createCourse',newCourse)" v-else>
+    <span>Course id: <input type="text" v-model="id"></span> <br>
+    <span>Course name: <input type="text" v-model="name"></span> <br>
+    <span>Course credit: <input type="number" step="1" min="1" max="10" v-model="credit"></span> <br>
+    <span>Lecturer: <br>
+    <span v-for="(lecturer, index) in lecturerList" :key="index">
+        <input type="checkbox" :id="lecturer" :value="lecturer" v-model="lecturers">
+        <label :for="lecturer"> {{lecturer.email}} </label> <br>
+
+    </span>
+    </span>
+
+    <button @click="createCourse(newCourse)">
         Create
     </button>
 </div>
