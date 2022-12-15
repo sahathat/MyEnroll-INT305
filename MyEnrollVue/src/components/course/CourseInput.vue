@@ -22,15 +22,18 @@ async function createCourse() {
   const newCourseEmail = []
   lecturers.value.forEach(lecturer => {
     newCourseEmail.push(lecturer.email)
-    console.log(newCourseEmail)
   })
-  await(setDoc(doc(db,"courses",id.value), {
+  if(newCourseEmail.length == 0){
+    newCourseEmail.push("")
+  }
+  console.log(newCourseEmail)
+  await setDoc(doc(db,"courses",id.value), {
     name: name.value,
     credit: credit.value,
     lecturers: newCourseEmail,
     createdOn: new Date(),
     updatedOn: new Date()
-  }))
+  })
   id.value = ''
   name.value = ''
   credit.value = ''
@@ -54,11 +57,17 @@ async function createCourse() {
     </span>
     </span>
 
-    <button @click="createCourse(newCourse)">
+    <button class="created" @click="createCourse()">
         Create
     </button>
 </div>
 </template>
  
-<style>
+<style scoped>
+.created {
+  background-color: green;
+    border-color: green;
+    color: white;
+    margin: 10px;
+}
 </style>

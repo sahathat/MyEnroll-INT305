@@ -81,7 +81,8 @@ semesters.forEach(function(obj1){
         console.log("Document written with ID : "+docRef.id)
         if(obj1.courseEnrolls !== undefined){
             obj1.courseEnrolls.forEach(function(obj2){
-                db.collection("semesters").doc(docRef.id).collection("courseEnrolls").doc(obj2.id).set({
+                db.collection("semesters").doc(docRef.id).collection("courseEnrolls").add({
+                    code: obj2.id,
                     name: obj2.name,
                     credit: obj2.credit,
                     isEnroll: obj2.isEnroll

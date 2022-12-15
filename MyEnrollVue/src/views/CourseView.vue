@@ -9,40 +9,43 @@ const courses = ref([])
 const count = ref(0)
 const lecturers = ref([])
 const pages = ref([])
+const numberPerPage = ref(3)
 
 async function getCourse() {
     courses.value = []
     const courseRef = collection(db, "courses")
-    const courseSnapshot = await getDocs(query(courseRef, limit(6)))
+    const courseSnapshot = await getDocs(query(courseRef, limit(numberPerPage.value)))
     courseSnapshot.forEach(async (doc) => {
       const data = doc.data()
       data.id = doc.id
       data.lecturers = await getLecturerFromEmail(data.lecturers)
       courses.value.push(data)
     })
-    const countFromServer = await getCountFromServer(query(courseRef), limit(6))
+    const countFromServer = await getCountFromServer(query(courseRef), limit(numberPerPage.value))
     count.value = countFromServer.data().count
+    getPage()
 }
 
 async function getCourseOnPage(page) {
   courses.value = []
   const courseRef = collection(db, "courses")
   const courseAllSnapshot = await getDocs(query(courseRef))
-  const lastVisible = courseAllSnapshot.docs[(page-1)*6]
-  const courseSnapshot = await getDocs(query(courseRef, limit(6), startAt(lastVisible)))
+  const lastVisible = courseAllSnapshot.docs[(page-1)*numberPerPage.value]
+  const courseSnapshot = await getDocs(query(courseRef, limit(numberPerPage.value), startAt(lastVisible)))
   courseSnapshot.forEach(async (doc) => {
     const data = doc.data()
     data.id = doc.id
     data.lecturers = await getLecturerFromEmail(data.lecturers)
     courses.value.push(data)
   })
-  const countFromServer = await getCountFromServer(query(courseRef), limit(6))
+  const countFromServer = await getCountFromServer(query(courseRef), limit(numberPerPage.value))
   count.value = countFromServer.data().count
 }
 
 async function getPage() {
+  pages.value = []
   const countCourseAll = await getCountFromServer(query(collection(db, "courses")))
-  for(let i = 0; i < Math.floor((countCourseAll.data().count/6)+1) ; i++){
+  for(let i = 0; i < Math.ceil((countCourseAll.data().count/numberPerPage.value)) ; i++){
     pages.value.push(i + 1)
   }
 }
@@ -77,17 +80,28 @@ async function deleteCourse(id) {
 onMounted(() => {
     getCourse()
     getLecturer()
-    getPage()
 })
 
 </script>
 
 <template>
-  <div>
-    <CourseInput @createCourse="getCourse" :lecturerList="lecturers"></CourseInput>
-    <CourseList :courses="courses" :count="count" @deleteCourse="deleteCourse" :pages="pages" @getCourseOnPage="getCourseOnPage"></CourseList>
+  <div class="div">
+    <CourseInput class="input" @createCourse="getCourse" :lecturerList="lecturers"></CourseInput>
+    <CourseList class="list" :courses="courses" :count="count" @deleteCourse="deleteCourse" :pages="pages" @getCourseOnPage="getCourseOnPage"></CourseList>
   </div>
 </template>
 
-<style>
+<style scoped>
+.div {
+  display: flex;
+  justify-content: center;
+}
+
+.input {
+  margin: 20px;
+}
+
+.list {
+  margin: 20px;
+}
 </style>

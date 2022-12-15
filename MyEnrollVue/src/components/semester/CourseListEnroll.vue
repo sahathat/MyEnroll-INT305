@@ -1,5 +1,4 @@
 <script setup>
-import CourseEnroll from './CourseEnroll.vue';
 
 defineProps({
     courses: {
@@ -13,12 +12,10 @@ const emit = defineEmits(['enrollCourse','deleteEnroll'])
  
 <template>
 <div>
-    <h3>Course Enroll</h3>
-    <CourseEnroll />
     <ul v-for="course in courses" :key="course.id">
         <li>
-            <p :class="{ isEnroll: course.isEnroll }">code: {{course.id}} name: {{course.name}} credit: {{course.credit}} </p>
-            <button @click="$emit('enrollCourse', course)">Enroll</button> <button @click="$emit('deleteEnroll', course)">Delete</button>
+            <p :class="{ isEnroll: course.isEnroll }">code: {{course.code}} name: {{course.name}} credit: {{course.credit}} </p>
+            <button class="enroll" @click="$emit('enrollCourse', course)">Enroll</button> <button class="delete" @click="$emit('deleteEnroll', course)">Delete</button>
         </li>
     </ul>
 </div>
@@ -26,6 +23,21 @@ const emit = defineEmits(['enrollCourse','deleteEnroll'])
  
 <style>
 .isEnroll {
+    color: red;
     text-decoration: line-through;
+}
+
+.enroll {
+    background-color: blue;
+    border-color: blue;
+    color: white;
+    margin: 10px;
+}
+
+.delete {
+    background-color: red;
+    border-color: red;
+    color: white;
+    margin: 10px;
 }
 </style>

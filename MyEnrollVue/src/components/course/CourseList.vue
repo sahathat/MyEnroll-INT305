@@ -30,15 +30,26 @@ const emit = defineEmits(['deleteCourse','getCourseOnPage'])
                     </li>
                 </ul>
             </p>
-            <button @click="$emit('deleteCourse', course.id)">delete</button>
+            <button class="delete" @click="$emit('deleteCourse', course.id)">delete</button>
         </li>
     </ul>
-    <button v-for="(i, index) in pages" :key="index" @click="$emit('getCourseOnPage', i)">
+    <button class="page" v-for="(i, index) in pages" :key="index" @click="$emit('getCourseOnPage', i)">
       {{i}}
     </button>
 </div>
 </template>
  
-<style>
+<style scoped>
+.page {
+    background-color: black;
+    color: white;
+    margin: 10px;
+}
 
+.delete {
+    background-color: red;
+    border-color: red;
+    color: white;
+    margin: 10px;
+}
 </style>
