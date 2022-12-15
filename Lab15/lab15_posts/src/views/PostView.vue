@@ -1,51 +1,48 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from "vue-router"
-import { collection, query, where, getDocs, getCountFromServer } from "firebase/firestore"
+import { collection, query, where, getDocs, onSnapshot,doc,getDoc } from "firebase/firestore"
 import db from "../firebase/init.js"
 import PostItem from "../components/PostItem.vue"
 
 const user = ref("")
+const username = ref("")
 const posts = ref([])
-const count = ref(0)
-const countComment = ref(0)
 const route = useRoute() 
 
 async function getPosts(){
-  user.value = route.params.user
+  user.value = route.params.user 
+
+  // const userRef = doc(db,"users",user.value)
+  // const userSnap = await getDoc(userRef)
+
+  // if(userSnap.exists()){
+  //   username.value = userSnap.data().firstname+" "+userSnap.data().lastname
+  // }
+
+  const postsRef = collection(db,"posts")
+  const postsQry = query(postsRef,where("user","==",user.value))
+  const querySnapshot = await getDocs(postsQry)
+
   posts.value = []
-  /*  add your code here */
-  const postQry = query(collection(db, "posts"),where("user","==", user.value))
-  const postSnapshot = await getDocs(postQry)
-  postSnapshot.forEach(async (doc) => {
-      let postData = doc.data()
-      postData.id = doc.id
-      postData.comments = await getComments(doc)
-      postData.commentCount = countComment.value
-      posts.value.push(postData)
-    });
-  count.value = await getCount(postQry)
-}
-  
-async function getComments(postDoc) {
-  const commentList = []
-  const commentQry = query(collection(db, "posts", postDoc.id, "comments"))
-  const commentSnapshot = await getDocs(commentQry)
-  commentSnapshot.forEach((doc) => {
-    let commentData = doc.data()
-    commentData.id = doc.id
-    commentList.push(commentData)
+  querySnapshot.forEach( async (doc) => {
+    let data = doc.data()
+    data.id = doc.id 
+    username.value = data.fullname
+    const commentRef = collection(db,"posts",doc.id,"comments")
+    const commentSnapshot = await getDocs(commentRef)
+    data.comments = []
+    commentSnapshot.forEach( (comment) => {
+      let cmtdata = comment.data()
+      cmtdata.id = comment.id
+      data.comments.push(cmtdata)
+    })
+    posts.value.push(data)
+    console.log(data)
   })
-  countComment.value = await getCount(commentQry)
-
-  return commentList
 }
 
-async function getCount(qry) {
-  const snapshot = await getCountFromServer(qry)
-  return snapshot.data().count
-}
-watch(() => route.params.user, getPosts)
+watch( () => route.params.user, getPosts)
 
 onMounted(() => {
   getPosts() 
@@ -54,8 +51,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <h3>Posts : {{user}} ({{count}})</h3>
-    <PostItem v-for="post in posts" :post="post" :key="post.id" @update-comment="getPosts"/>
+    <h3>Posts : {{username}}</h3>
+    <PostItem v-for="post in posts" :post="post" :key="post.id" @reload-post="getPosts"/>
 </template>
 
 <style scoped>

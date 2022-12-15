@@ -1,8 +1,8 @@
 <script setup>
+import { doc, updateDoc, increment } from 'firebase/firestore'
+import db from '../firebase/init.js'
 import CommentItem from "../components/CommentItem.vue"
-import { collection, addDoc, getDocs, query } from "firebase/firestore"
-import db from "../firebase/init.js"
-import {ref} from "vue"
+import NewComment from "../components/NewComment.vue"
 
 const props = defineProps({
   post: {
@@ -11,46 +11,24 @@ const props = defineProps({
   }
 });
 
-const newComment = ref({})
+const emit = defineEmits(['reload-post'])
 
-async function addComment(post) {
-  const commentRef = collection(db, "posts", post.id, "comments")
-  await addDoc(commentRef, {
-    comment: newComment.value.comment,
-    name: newComment.value.name,
-    stars: newComment.value.stars,
-    cmtdate: new Date()
-  })
-  newComment.value = {}
+async function updateCountPost(){
 
-  post.comments = []
-  const commentSnapshot = await getDocs(query(commentRef))
-  commentSnapshot.forEach((doc) => {
-    let commentData = doc.data()
-    commentData.id = doc.id
-    post.comments.push(commentData)
+  const docRef = doc(db,"posts",props.post.id)
+  await updateDoc(docRef,{
+    countComment: increment(1)
   })
+  emit('reload-post')
 }
 
-defineEmits(["update-comment"])
 </script>
 
 <template>
   <div class="box">
     {{post.body}}
-    <h4 class="title">comments ({{post.commentCount}})</h4>
-    <div>
-      Name: <input type="text" v-model="newComment.name"/> <br>
-      Stars: <select v-model="newComment.stars">
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-      </select> <br>
-      Comment: <br><textarea v-model="newComment.comment"></textarea> <br>
-      <button @click="addComment(post)">send</button>
-    </div>
+    <h4 class="title">comments ({{post.countComment}})</h4>
+    <NewComment :docId="post.id" @add-comment="updateCountPost" />
     <CommentItem v-for="comment in post.comments" :comment="comment" :key="comment.id" />
   </div>
 </template>
@@ -67,5 +45,3 @@ defineEmits(["update-comment"])
     color: hsla(160, 100%, 37%, 1);
   }
 </style>
-
-

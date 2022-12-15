@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SemesterView from '../views/SemesterView.vue'
+import SemesterCourse from '../views/SemesterCourse.vue'
 import CourseView from '../views/CourseView.vue'
 import LecturerView from '../views/LecturerView.vue'
 import Credit from '../views/Credit.vue'
@@ -11,6 +12,11 @@ const router = createRouter({
       path: '/',
       name: 'semester',
       component: SemesterView
+    },
+    {
+      path: '/:id',
+      name: 'semesterCourse',
+      component: SemesterCourse
     },
     {
       path: '/course',

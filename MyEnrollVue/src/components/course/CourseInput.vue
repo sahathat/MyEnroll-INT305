@@ -22,6 +22,7 @@ async function createCourse() {
   const newCourseEmail = []
   lecturers.value.forEach(lecturer => {
     newCourseEmail.push(lecturer.email)
+    console.log(newCourseEmail)
   })
   await(setDoc(doc(db,"courses",id.value), {
     name: name.value,
